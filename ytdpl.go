@@ -72,13 +72,18 @@ func Download(durl string, rec *Record) error {
 		rec.SendLog("start")
 
 		scanner := bufio.NewScanner(rc)
+		subtitles := map[string]struct{}{}
 		for scanner.Scan() {
 			line := scanner.Text()
 
 			rec.SendLog(rePrefix.ReplaceAllString(line, ""))
-
 			if idx := strings.Index(line, *argOutDir); idx != -1 {
 				fp := line[idx:]
+
+				if strings.Contains(line, "subtitles to:") {
+					subtitles[fp[len(*argOutDir):]] = struct{}{}
+					continue
+				}
 
 				dotidx := strings.LastIndex(fp, ".")
 				if dotidx == -1 {
@@ -94,13 +99,16 @@ func Download(durl string, rec *Record) error {
 
 				fp = fp[len(*argOutDir):]
 				base := filepath.Base(fp)
-				fp = filepath.Join("download", fp[:len(fp)-len(base)], url.PathEscape(base))
+				fp = filepath.Join("/download", fp[:len(fp)-len(base)], url.PathEscape(base))
 				if len(rec.Filepath) == 0 || len(fp) < len(rec.Filepath) {
 					rec.Filepath = fp
 				}
 			}
 		}
 
+		for k := range subtitles {
+			rec.Subtitles = append(rec.Subtitles, filepath.Join("/download", k))
+		}
 		log.Print("ended scanning")
 
 		if err := scanner.Err(); err != nil {

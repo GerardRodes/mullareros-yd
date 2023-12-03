@@ -7,12 +7,13 @@ import (
 
 type (
 	Record struct {
-		ID        string
-		Filepath  string
-		lastLog   string
-		totalLogs atomic.Uint32
-		listeners []chan string
-		l         sync.RWMutex
+		ID        string        `json:"id"`
+		Filepath  string        `json:"filepath"`
+		Subtitles []string      `json:"subtitles"`
+		lastLog   string        `json:"-"`
+		totalLogs atomic.Uint32 `json:"-"`
+		listeners []chan string `json:"-"`
+		l         sync.RWMutex  `json:"-"`
 	}
 )
 

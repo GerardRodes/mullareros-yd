@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -159,9 +160,10 @@ func handlerDownload(w http.ResponseWriter, r *http.Request) (outErr error) {
 
 			flusher.Flush()
 			if !ok {
+				d, _ := json.Marshal(*rec)
 				_, err = w.Write([]byte(`
 event: end
-data: ` + rec.Filepath + "\n\n"))
+data: ` + string(d) + "\n\n"))
 
 				if err != nil {
 					return fmt.Errorf("write: %w", err)

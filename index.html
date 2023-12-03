@@ -61,12 +61,19 @@ pre {
 	line-height: 1.1rem;
 }
 
-a {
+a.video {
 	font-size: 2rem;
-    color: greenyellow;
-    text-align: center;
-    display: block;
-    padding: 1rem 0;
+	color: greenyellow;
+	text-align: center;
+	display: block;
+	padding: 1rem 0;
+}
+a.sub {
+	font-size: 0.9rem;
+	color: greenyellow;
+	text-align: center;
+	display: block;
+	padding: 0.25rem 0;
 }
 	</style>
 </head>
@@ -82,16 +89,31 @@ a {
 			window.scrollTo(scrollingElement.scrollLeft ?? 0, document.body.scrollHeight || document.documentElement.scrollHeight)
 		}
 		evtSource.onmessage = e => {
-			$data.innerText += e.data + '\n'
+			$data.appendChild(document.createTextNode(e.data))
+			$data.appendChild(document.createElement('br'))
 			scrll()
-			setTimeout(scrll, 0)
 		}
 		evtSource.addEventListener("end", e => {
 			evtSource.close()
-			const $a = document.createElement('a')
-			$a.setAttribute('href', location.origin + "/" + e.data)
-			$a.innerText = 'Al toque mi Rey'
-			document.body.appendChild($a)
+
+			const data = JSON.parse(e.data)
+
+			{
+				const $a = document.createElement('a')
+				$a.setAttribute('href', data.filepath)
+				$a.innerText = 'Al toque mi Rey'
+				$a.className = "video"
+				document.body.appendChild($a)
+			}
+
+			for (const s of data.subtitles) {
+				const $a = document.createElement('a')
+				$a.setAttribute('href', s)
+				$a.className = "sub"
+				$a.innerText = s.split('.').slice(-2).join('.')
+				document.body.appendChild($a)
+			}
+			scrll()
 		})
 	</script>
 </body>
