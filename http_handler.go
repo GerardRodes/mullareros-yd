@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -45,7 +46,7 @@ var handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err != nil {
+	if err != nil && errors.Is(err, context.Canceled) {
 		log.Error().Err(err).Msg("handler")
 	}
 })

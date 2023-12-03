@@ -32,8 +32,6 @@ func Download(durl string, rec *Record) error {
 		"--output", path.Join(*argOutDir, "%(id)s", "%(title).200B.%(ext)s"),
 	)
 
-	log.Info().Msg(cmd.String())
-
 	rc, err := cmd.StdoutPipe()
 	if err != nil {
 		return fmt.Errorf("creating pipe: %w", err)
