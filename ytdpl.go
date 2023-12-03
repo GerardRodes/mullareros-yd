@@ -29,6 +29,10 @@ func Download(durl string, rec *Record) error {
 		"--concurrent-fragments", fmt.Sprintf("%d", *argDownloadThreads),
 		"--restrict-filenames",
 		"--trim-filenames", "150",
+		"--embed-subs",
+		"--write-subs",
+		"--sub-langs", "en.*,es.*",
+		"--write-auto-subs",
 		"--output", path.Join(*argOutDir, "%(id)s", "%(title).200B.%(ext)s"),
 	)
 
