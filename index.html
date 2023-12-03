@@ -59,7 +59,6 @@ body {
 pre {
 	font-size: 1rem;
 	line-height: 1.1rem;
-	padding: 0.5rem
 }
 
 a {
@@ -80,7 +79,7 @@ a {
 		const evtSource = new EventSource("/yt-dlp" + location.href.substr(location.origin.length));
 		function scrll () {
 			scrollingElement.scrollTop = scrollingElement.scrollHeight
-			window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight)
+			window.scrollTo(scrollingElement.scrollLeft ?? 0, document.body.scrollHeight || document.documentElement.scrollHeight)
 		}
 		evtSource.onmessage = e => {
 			$data.innerText += e.data + '\n'
@@ -91,7 +90,7 @@ a {
 			evtSource.close()
 			const $a = document.createElement('a')
 			$a.setAttribute('href', location.origin + "/" + e.data)
-			$a.innerText = 'Download'
+			$a.innerText = 'Al toque mi Rey'
 			document.body.appendChild($a)
 		})
 	</script>

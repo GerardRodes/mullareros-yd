@@ -23,20 +23,20 @@ var (
 	isProd             = false
 )
 
-func init() {
+func main() {
+	flag.Parse()
+
 	time.Local = time.UTC
 	isProd = !strings.Contains(os.Args[0], "go-build")
 
-	_ = os.Mkdir(*argOutDir, os.ModePerm)
-}
-
-func main() {
 	if isProd {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	} else {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
+
+	_ = os.Mkdir(*argOutDir, os.ModePerm)
 
 	log.Print("hi")
 	defer log.Print("bye")

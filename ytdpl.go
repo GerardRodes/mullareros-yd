@@ -27,6 +27,8 @@ func Download(durl string, rec *Record) error {
 	cmd := exec.Command("yt-dlp", durl,
 		"--newline",
 		"--concurrent-fragments", fmt.Sprintf("%d", *argDownloadThreads),
+		"--restrict-filenames",
+		"--trim-filenames", "150",
 		"--output", path.Join(*argOutDir, "%(id)s", "%(title).200B.%(ext)s"),
 	)
 
@@ -68,40 +70,32 @@ func Download(durl string, rec *Record) error {
 		rec.SendLog("start")
 
 		scanner := bufio.NewScanner(rc)
-		var fileloc string
-		var oneFormat bool
 		for scanner.Scan() {
 			line := scanner.Text()
 
 			rec.SendLog(rePrefix.ReplaceAllString(line, ""))
 
-			oneFormat = oneFormat || strings.Contains(line, "Downloading 1 format")
-
 			if idx := strings.Index(line, *argOutDir); idx != -1 {
-				if !oneFormat {
-					if !strings.HasPrefix(line, "[Merger] Merging") ||
-						!strings.HasSuffix(line, "has already been downloaded") {
-						// [Merger] Merging formats into "/tmp/yt-dlp/_RXfyn9h8po/¿Cómo funciona STEAM por dentro？.webm"
-						// [download] /tmp/yt-dlp/_RXfyn9h8po/¿Cómo funciona STEAM por dentro？.webm has already been downloaded
-						continue
-					}
-				}
+				fp := line[idx:]
 
-				fileloc = line[idx:]
-
-				dotidx := strings.LastIndex(fileloc, ".")
+				dotidx := strings.LastIndex(fp, ".")
 				if dotidx == -1 {
 					panic("cannot parse file loc")
 				}
 
-				for i, c := range fileloc[dotidx+1:] {
-					if unicode.IsSpace(c) {
-						fileloc = fileloc[:dotidx+i+1]
+				for i, c := range fp[dotidx+1:] {
+					if !(unicode.IsLetter(c) || unicode.IsNumber(c)) {
+						fp = fp[:dotidx+i+1]
 						break
 					}
 				}
 
-				rec.Filepath = filepath.Join("download", url.PathEscape(fileloc[len(*argOutDir):]))
+				fp = fp[len(*argOutDir):]
+				base := filepath.Base(fp)
+				fp = filepath.Join("download", fp[:len(fp)-len(base)], url.PathEscape(base))
+				if len(rec.Filepath) == 0 || len(fp) < len(rec.Filepath) {
+					rec.Filepath = fp
+				}
 			}
 		}
 

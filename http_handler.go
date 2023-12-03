@@ -158,7 +158,6 @@ func handlerDownload(w http.ResponseWriter, r *http.Request) (outErr error) {
 
 			flusher.Flush()
 			if !ok {
-
 				_, err = w.Write([]byte(`
 event: end
 data: ` + rec.Filepath + "\n\n"))
