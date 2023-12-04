@@ -31,8 +31,9 @@ func Download(durl string, rec *Record) error {
 		"--trim-filenames", "150",
 		"--embed-subs",
 		"--write-subs",
-		"--sub-langs", "en.*,es.*",
+		"--sub-langs", "en.*",
 		"--write-auto-subs",
+		"--no-playlist",
 		"--output", path.Join(*argOutDir, "%(id)s", "%(title).200B.%(ext)s"),
 	)
 
