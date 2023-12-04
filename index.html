@@ -88,9 +88,12 @@ a.sub {
 			scrollingElement.scrollTop = scrollingElement.scrollHeight
 			window.scrollTo(scrollingElement.scrollLeft ?? 0, document.body.scrollHeight || document.documentElement.scrollHeight)
 		}
+		let text = ['connecting...']
 		evtSource.onmessage = e => {
-			$data.appendChild(document.createTextNode(e.data))
-			$data.appendChild(document.createElement('br'))
+			text.push(e.data)
+			text = text.slice(-500)
+
+			$data.textContent = text.join("\n")
 			scrll()
 		}
 		evtSource.addEventListener("end", e => {
