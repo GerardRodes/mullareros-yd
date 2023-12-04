@@ -49,7 +49,7 @@ func main() {
 	go func() {
 		defer wg.Done()
 
-		t := time.NewTimer(time.Second * 10)
+		t := time.NewTicker(time.Second * 10)
 		for {
 			select {
 			case <-ctx.Done():
@@ -93,7 +93,6 @@ func clearOldFiles() {
 			continue
 		}
 
-		log.Printf("deleting %s", d.Name())
 		if err := os.RemoveAll(filepath.Join(*argOutDir, d.Name())); err != nil {
 			log.Error().Err(err).Msg("remove all")
 		}
