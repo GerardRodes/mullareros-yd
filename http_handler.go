@@ -36,11 +36,23 @@ var handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	case r.URL.Path == "/clear":
 		err = handlerClear(w, r)
 	case strings.HasPrefix(r.URL.Path, "/download/"):
-		http.ServeFile(w, r, filepath.Join(*argOutDir, r.URL.Path[len("/download/"):]))
+		fp := filepath.Join(*argOutDir, r.URL.Path[len("/download/"):])
+
+		http.ServeFile(w, r, fp)
 		return
 	case strings.HasPrefix(r.URL.Path, "/yt-dlp/"):
 		err = handlerDownload(w, r)
 	default:
+
+		if v, ok := idCache.Load(r.URL.String()[1:]); ok {
+			id := v.(string)
+			if (&Record{ID: id}).IsDone() {
+				log.Print("is done, redirect")
+				http.Redirect(w, r, filepath.Join("/download/", id), http.StatusTemporaryRedirect)
+				return
+			}
+		}
+
 		w.WriteHeader(http.StatusOK)
 		w.Header().Add("content-type", "text/html")
 		_, _ = w.Write(indexHTML)
@@ -104,13 +116,12 @@ func handlerDownload(w http.ResponseWriter, r *http.Request) (outErr error) {
 	log.Printf("got id: %s", id)
 
 	var rec *Record
-	if r := globalState.Get(id); r != nil {
+	if existingRec := globalState.Get(id); existingRec != nil {
 		log.Print("found on state")
-		rec = r
+		rec = existingRec
 	} else {
-		rec = &Record{
-			ID: id,
-		}
+		rec = &Record{ID: id}
+
 		globalState.Put(rec)
 		log.Print("created record")
 

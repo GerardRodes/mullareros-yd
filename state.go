@@ -1,8 +1,13 @@
 package main
 
 import (
+	"errors"
+	"os"
+	"path/filepath"
 	"sync"
 	"sync/atomic"
+
+	"github.com/rs/zerolog/log"
 )
 
 type (
@@ -16,6 +21,15 @@ type (
 		l         sync.RWMutex  `json:"-"`
 	}
 )
+
+func (r *Record) isDoneFlagPath() string {
+	return filepath.Join(*argOutDir, r.ID, "done")
+}
+
+func (r *Record) IsDone() bool {
+	_, err := os.Stat(r.isDoneFlagPath())
+	return !errors.Is(err, os.ErrNotExist)
+}
 
 func (r *Record) AddListener(l chan string) {
 	r.l.Lock()
@@ -49,6 +63,12 @@ func (r *Record) Started() bool {
 func (r *Record) Done() {
 	r.l.Lock()
 	defer r.l.Unlock()
+
+	f, err := os.Create(r.isDoneFlagPath())
+	if err != nil {
+		log.Error().Err(err).Msg("cannot create is done flag")
+	}
+	f.Close()
 
 	for i := range r.listeners {
 		close(r.listeners[i])

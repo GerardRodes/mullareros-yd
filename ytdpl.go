@@ -8,10 +8,10 @@ import (
 	"io"
 	"net/url"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"unicode"
 
 	"github.com/rs/zerolog/log"
@@ -35,7 +35,7 @@ func Download(durl string, rec *Record) error {
 		"--sub-langs", "en.*",
 		"--write-auto-subs",
 		"--no-playlist",
-		"--output", path.Join(*argOutDir, "%(id)s", "%(title).200B.%(ext)s"),
+		"--output", filepath.Join(*argOutDir, "%(id)s", "%(title).200B.%(ext)s"),
 	}
 
 	{
@@ -132,7 +132,13 @@ func Download(durl string, rec *Record) error {
 	return g.Wait()
 }
 
+var idCache sync.Map
+
 func GetID(ctx context.Context, durl string) (string, error) {
+	if v, ok := idCache.Load(durl); ok {
+		return v.(string), nil
+	}
+
 	cmd := exec.CommandContext(ctx, "yt-dlp", durl, "-O", "id")
 	out := bytes.NewBuffer(nil)
 	cmd.Stdout = out
@@ -140,5 +146,8 @@ func GetID(ctx context.Context, durl string) (string, error) {
 		return "", fmt.Errorf("run: %w", err)
 	}
 
-	return strings.TrimSpace(out.String()), nil
+	id := strings.TrimSpace(out.String())
+	idCache.Store(durl, id)
+
+	return id, nil
 }
