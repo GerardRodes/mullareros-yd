@@ -24,7 +24,8 @@ var rePrefix = regexp.MustCompile(`^\[\w*\]\s`)
 func Download(durl string, rec *Record) error {
 	log.Printf("downloading: %s", durl)
 
-	cmd := exec.Command("yt-dlp", durl,
+	args := []string{
+		durl,
 		"--newline",
 		"--concurrent-fragments", fmt.Sprintf("%d", *argDownloadThreads),
 		"--restrict-filenames",
@@ -35,7 +36,16 @@ func Download(durl string, rec *Record) error {
 		"--write-auto-subs",
 		"--no-playlist",
 		"--output", path.Join(*argOutDir, "%(id)s", "%(title).200B.%(ext)s"),
-	)
+	}
+
+	{
+		purl, _ := url.Parse(durl)
+		if strings.HasSuffix(purl.Host, "mitele.es") {
+			args = append(args, "--fixup", "never")
+		}
+	}
+
+	cmd := exec.Command("yt-dlp", args...)
 
 	rc, err := cmd.StdoutPipe()
 	if err != nil {
