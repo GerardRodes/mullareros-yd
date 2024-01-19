@@ -19,7 +19,7 @@ var (
 	argHttpPort        = flag.String("http-port", "5000", "")
 	argOutDir          = flag.String("out-dir", "/tmp/yt-dlp", "")
 	argDownloadThreads = flag.Int("download-threads", 2, "")
-	argMaxAge          = flag.Duration("max-age", time.Hour*4, "")
+	argMaxAge          = flag.Duration("max-age", time.Hour*12, "")
 	isProd             = false
 )
 
